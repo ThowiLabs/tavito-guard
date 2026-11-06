@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/sys/unix"
 	"io"
 	"io/fs"
 	"os"
@@ -29,18 +30,33 @@ func Redact(s, token string) string {
 	return s
 }
 func ReadLog(path, token, filter string) ([]string, error) {
-	fi, e := os.Lstat(path)
+	if !filepath.IsAbs(path) {
+		return nil, errors.New("el registro requiere ruta absoluta")
+	}
+	base := filepath.Dir(path)
+	name := filepath.Base(path)
+	if within(path, "/var/log") {
+		base = "/var/log"
+		name, _ = filepath.Rel(base, path)
+	}
+	root, e := os.OpenRoot(base)
+	if e != nil {
+		return nil, e
+	}
+	defer root.Close()
+	f, e := root.OpenFile(name, os.O_RDONLY|unix.O_NOFOLLOW|unix.O_NONBLOCK, 0)
+	if e != nil {
+		return nil, e
+	}
+	defer f.Close()
+	fi, e := f.Stat()
 	if e != nil {
 		return nil, e
 	}
 	if !fi.Mode().IsRegular() {
 		return nil, errors.New("el registro debe ser un archivo regular")
 	}
-	f, e := os.Open(path)
-	if e != nil {
-		return nil, e
-	}
-	defer f.Close()
+
 	start := fi.Size() - 256*1024
 	if start < 0 {
 		start = 0
@@ -223,10 +239,10 @@ func CreateBackup(ctx context.Context, c Config, target Target) (string, error) 
 		if count > 20000 {
 			return errors.New("respaldo supera 20000 entradas")
 		}
-		if name == "." || d.IsDir() || d.Type()&os.ModeSymlink != 0 {
+		if name == "." || d.IsDir() || !d.Type().IsRegular() {
 			return nil
 		}
-		file, err := root.Open(name)
+		file, err := root.OpenFile(name, os.O_RDONLY|unix.O_NOFOLLOW|unix.O_NONBLOCK, 0)
 		if err != nil {
 			return err
 		}
