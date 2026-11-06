@@ -114,3 +114,7 @@ PASS: TestSpecialFilesCannotBlockBackupOrLog pasó con -race. Una FIFO real se o
 ## Regresión OpenRC de 0.1.1
 
 Se reprodujo el mensaje exacto de rechazo de RestartOnFailure con la misma revisión de svcforge. El nuevo selector usa RestartNever con OpenRC y RestartOnFailure con systemd, manteniendo AutoStart. Un fixture dentro de Alpine chroot, con rc-service y rc-update simulados, completó install, repair y remove mediante el backend real de svcforge. La configuración mantuvo su SHA256 y los archivos administrados se eliminaron al finalizar. No se afirma una prueba con OpenRC nativo ni con el token real del usuario. El caso de ambos gestores está cubierto por TestLifecycleRestartPolicies.
+
+## Regresión de mensajes de 0.1.2
+
+La API simulada ahora rechaza inline_keyboard:null según el contrato de InlineKeyboardMarkup. Antes del cambio de cliente falló TestTelegramMenuNavigationAndSession por ausencia de imágenes/archivos. Después pasaron ese recorrido, TestResourcesSendsPhotoWithStrictTelegram, TestEmptyKeyboardUsesArray y TestTelegramErrorReasonIsUsefulAndRedacted. Se validan solicitudes JSON y multipart, con errores que conservan el motivo y ocultan el token. Esta prueba no equivale a una interacción con el bot real del usuario, cuyo mensaje de error concreto no se recibió.

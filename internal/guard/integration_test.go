@@ -69,6 +69,12 @@ func (r *apiRecorder) serve(w http.ResponseWriter, req *http.Request) {
 		data, _ := json.Marshal(raw)
 		var k Keyboard
 		_ = json.Unmarshal(data, &k)
+		if k.Rows == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(400)
+			_ = json.NewEncoder(w).Encode(map[string]any{"ok": false, "error_code": 400, "description": "Bad Request: inline_keyboard must be an Array"})
+			return
+		}
 		for _, row := range k.Rows {
 			if len(row) > 2 {
 				http.Error(w, "too many buttons", 400)

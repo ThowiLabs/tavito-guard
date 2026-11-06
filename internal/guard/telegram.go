@@ -48,16 +48,33 @@ type Keyboard struct {
 	Rows [][]Button `json:"inline_keyboard"`
 }
 
+func (k Keyboard) MarshalJSON() ([]byte, error) {
+	rows := make([][]Button, 0, len(k.Rows))
+	for _, row := range k.Rows {
+		if len(row) > 0 {
+			rows = append(rows, row)
+		}
+	}
+	return json.Marshal(struct {
+		Rows [][]Button `json:"inline_keyboard"`
+	}{Rows: rows})
+}
+
 func Btn(text, data string) Button { return Button{text, data} }
 func KB(rows ...[]Button) Keyboard { return Keyboard{rows} }
 
 type APIError struct {
 	Code, RetryAfter int
 	Method           string
+	Description      string
 }
 
 func (e *APIError) Error() string {
-	return fmt.Sprintf("Telegram: %s falló (HTTP/API %d)", e.Method, e.Code)
+	message := fmt.Sprintf("Telegram: %s falló (HTTP/API %d)", e.Method, e.Code)
+	if e.Description != "" {
+		message += ": " + e.Description
+	}
+	return message
 }
 
 type Telegram struct {
@@ -92,7 +109,11 @@ func (t *Telegram) decode(method string, resp *http.Response, out any) error {
 		if env.Code == 0 {
 			env.Code = resp.StatusCode
 		}
-		return &APIError{env.Code, env.Params.Retry, method}
+		description := Redact(env.Description, "")
+		if strings.HasPrefix(t.Base, "https://api.telegram.org/bot") {
+			description = Redact(description, strings.TrimPrefix(t.Base, "https://api.telegram.org/bot"))
+		}
+		return &APIError{Code: env.Code, RetryAfter: env.Params.Retry, Method: method, Description: trimText(description, 240)}
 	}
 	if out != nil {
 		return json.Unmarshal(env.Result, out)
@@ -130,7 +151,11 @@ func (t *Telegram) Updates(ctx context.Context, offset int64) ([]Update, error) 
 }
 func (t *Telegram) Send(ctx context.Context, chat int64, text string, k Keyboard) (Message, error) {
 	var m Message
-	e := t.Call(ctx, "sendMessage", map[string]any{"chat_id": chat, "text": text, "reply_markup": k}, &m)
+	payload := map[string]any{"chat_id": chat, "text": text}
+	if len(k.Rows) > 0 {
+		payload["reply_markup"] = k
+	}
+	e := t.Call(ctx, "sendMessage", payload, &m)
 	return m, e
 }
 func (t *Telegram) Edit(ctx context.Context, chat, id int64, text string, k Keyboard) error {
@@ -161,11 +186,15 @@ func (t *Telegram) File(ctx context.Context, chat int64, method, name, caption s
 	}
 	_ = w.WriteField("chat_id", strconv.FormatInt(chat, 10))
 	_ = w.WriteField("caption", trimText(caption, 1000))
-	kb, e := json.Marshal(k)
-	if e != nil {
-		return e
+	if len(k.Rows) > 0 {
+		kb, e := json.Marshal(k)
+		if e != nil {
+			return e
+		}
+		if e = w.WriteField("reply_markup", string(kb)); e != nil {
+			return e
+		}
 	}
-	_ = w.WriteField("reply_markup", string(kb))
 	if e = w.Close(); e != nil {
 		return e
 	}

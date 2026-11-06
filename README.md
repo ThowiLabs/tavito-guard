@@ -186,3 +186,7 @@ Las dependencias Go puras son svcforge (ciclo de instalación), x/image (tipogra
 La versión 0.1.0 solicitaba RestartOnFailure también en OpenRC y svcforge la rechazaba. La versión 0.1.1 detecta el gestor: OpenRC usa RestartNever y systemd conserva RestartOnFailure. En OpenRC se mantiene el inicio al arrancar el sistema; la supervisión automática de caídas no se configura con esta revisión de la biblioteca.
 
 Si el token ya se validó y la configuración se guardó, reemplaza el binario por 0.1.1 y vuelve a ejecutar --install. Se reutiliza la configuración existente. Como alternativa temporal, --serve inicia el bot en primer plano y evita el instalador.
+
+## Corrección de mensajes de 0.1.2
+
+Se corrige el JSON de mensajes sin botones: se omite reply_markup en mensajes nuevos y se envía inline_keyboard:[] al retirar botones de un mensaje existente. Esto evita el rechazo del formato null que impedía enviar las tarjetas de Recursos e Historial. Los errores de Telegram muestran ahora su motivo concreto, con longitud limitada y credenciales ocultas. Se conserva la corrección OpenRC de 0.1.1.
