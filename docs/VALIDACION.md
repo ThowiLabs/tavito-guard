@@ -110,3 +110,7 @@ readelf -l dist/tavito-guard-linux-arm64
 ## Comprobación final de archivos especiales
 
 PASS: TestSpecialFilesCannotBlockBackupOrLog pasó con -race. Una FIFO real se omite en el respaldo y se rechaza como registro; un enlace de registro también se rechaza. Las aperturas no bloqueantes y sin seguimiento de enlaces evitan la espera por archivos especiales.
+
+## Regresión OpenRC de 0.1.1
+
+Se reprodujo el mensaje exacto de rechazo de RestartOnFailure con la misma revisión de svcforge. El nuevo selector usa RestartNever con OpenRC y RestartOnFailure con systemd, manteniendo AutoStart. Un fixture dentro de Alpine chroot, con rc-service y rc-update simulados, completó install, repair y remove mediante el backend real de svcforge. La configuración mantuvo su SHA256 y los archivos administrados se eliminaron al finalizar. No se afirma una prueba con OpenRC nativo ni con el token real del usuario. El caso de ambos gestores está cubierto por TestLifecycleRestartPolicies.
