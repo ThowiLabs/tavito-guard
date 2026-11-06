@@ -134,7 +134,7 @@ Guarda la clave privada fuera del repositorio. Copia únicamente la clave públi
 Para firmar un artefacto de una versión nueva:
 
 ```sh
-./dist/tavito-release --key tavito-update.key --artifact dist/tavito-guard-linux-amd64 --version 0.2.0 --arch amd64 --url https://github.com/YahirHub/tavito-guard/releases/download/v0.2.0/tavito-guard-linux-amd64 --out manifest-linux-amd64.json
+./dist/tavito-release --key tavito-update.key --artifact dist/tavito-guard-linux-amd64 --version 0.2.0 --arch amd64 --url https://github.com/ThowiLabs/tavito-guard/releases/download/v0.2.0/tavito-guard-linux-amd64 --out manifest-linux-amd64.json
 ```
 
 Genera también el manifiesto arm64 con su binario y arquitectura. Publica ambos binarios y `manifest-linux-amd64.json` / `manifest-linux-arm64.json` en la release correspondiente.

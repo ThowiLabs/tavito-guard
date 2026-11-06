@@ -58,8 +58,8 @@ func (m UpdateManifest) Verify(publicKey string) error {
 }
 func validReleaseURL(raw string) error {
 	u, e := url.Parse(raw)
-	if e != nil || u.Scheme != "https" || u.User != nil || u.Host != "github.com" || !strings.HasPrefix(u.Path, "/YahirHub/tavito-guard/releases/download/") || u.Fragment != "" {
-		return errors.New("la actualización debe proceder de releases de YahirHub/tavito-guard por HTTPS")
+	if e != nil || u.Scheme != "https" || u.User != nil || u.Host != "github.com" || !strings.HasPrefix(u.Path, "/ThowiLabs/tavito-guard/releases/download/") || u.Fragment != "" {
+		return errors.New("la actualización debe proceder de releases de ThowiLabs/tavito-guard por HTTPS")
 	}
 	return nil
 }
@@ -77,7 +77,7 @@ func releaseClient() *http.Client {
 }
 func FetchUpdate(ctx context.Context, c Config, current string) (UpdateManifest, error) {
 	var m UpdateManifest
-	link := "https://github.com/YahirHub/tavito-guard/releases/latest/download/manifest-linux-" + runtime.GOARCH + ".json"
+	link := "https://github.com/ThowiLabs/tavito-guard/releases/latest/download/manifest-linux-" + runtime.GOARCH + ".json"
 	req, _ := http.NewRequestWithContext(ctx, "GET", link, nil)
 	resp, e := releaseClient().Do(req)
 	if e != nil {
