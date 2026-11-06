@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-var version = "0.1.0"
+var version = "0.1.1"
 
 func main() {
 	if e := run(); e != nil && !errors.Is(e, context.Canceled) {

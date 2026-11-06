@@ -180,3 +180,9 @@ Consulta [docs/VALIDACION.md](docs/VALIDACION.md) para la evidencia y las compro
 - `licenses/`: avisos de las dependencias redistribuidas.
 
 Las dependencias Go puras son svcforge (ciclo de instalación), x/image (tipografía y PNG), x/sys (interfaces Linux), x/term (entrada oculta) y x/text (dependencia de tipografía). No se usa SQLite, un navegador ni un proceso externo para generar tarjetas.
+
+## Corrección OpenRC de 0.1.1
+
+La versión 0.1.0 solicitaba RestartOnFailure también en OpenRC y svcforge la rechazaba. La versión 0.1.1 detecta el gestor: OpenRC usa RestartNever y systemd conserva RestartOnFailure. En OpenRC se mantiene el inicio al arrancar el sistema; la supervisión automática de caídas no se configura con esta revisión de la biblioteca.
+
+Si el token ya se validó y la configuración se guardó, reemplaza el binario por 0.1.1 y vuelve a ejecutar --install. Se reutiliza la configuración existente. Como alternativa temporal, --serve inicia el bot en primer plano y evita el instalador.

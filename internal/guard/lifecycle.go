@@ -89,7 +89,7 @@ func AppSpec(c Config, path, version string) svcforge.App {
 	return svcforge.App{
 		ID: "tavito-guard", Name: "tavito-guard", DisplayName: "Tavito Guard", Description: "Administración Linux desde Telegram", Version: version,
 		Executable: svcforge.Executable{InstallPath: "/usr/local/bin/tavito-guard", Mode: 0755},
-		Service:    svcforge.Service{Enabled: true, Name: "tavito-guard", Description: "Tavito Guard", Arguments: []string{"--serve", "--config", path}, WorkingDirectory: c.DataDir, AutoStart: true, Restart: svcforge.RestartOnFailure, DependOnNetwork: true, LogPath: filepath.Join(c.DataDir, "runtime.log")},
+		Service:    svcforge.Service{Enabled: true, Name: "tavito-guard", Description: "Tavito Guard", Arguments: []string{"--serve", "--config", path}, WorkingDirectory: c.DataDir, AutoStart: true, Restart: svcforge.RestartNever, DependOnNetwork: true, LogPath: filepath.Join(c.DataDir, "runtime.log")},
 		Upgrade: svcforge.UpgradePolicy{BackupTargets: []svcforge.BackupTarget{{Path: path}, {Path: filepath.Join(c.DataDir, "state.json"), Optional: true}}, KeepBackups: 2, HealthCheck: svcforge.HealthCheck{Timeout: 40 * time.Second, Check: func(ctx context.Context) error {
 			var h struct {
 				Version string
@@ -116,7 +116,11 @@ func AppSpec(c Config, path, version string) svcforge.App {
 func Lifecycle(ctx context.Context, c Config, path, version string, op svcforge.Operation) (svcforge.Result, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	return (svcforge.Runner{App: AppSpec(c, path, version)}).Execute(ctx, op)
+	manager, err := svcforge.DetectServiceManager()
+	if err != nil {
+		return svcforge.Result{}, err
+	}
+	return (svcforge.Runner{App: appForServiceManager(c, path, version, manager)}).Execute(ctx, op)
 }
 func LockRuntime(dir string) (func(), error) {
 	f, e := os.OpenFile(filepath.Join(dir, "runtime.lock"), os.O_CREATE|os.O_RDWR|unix.O_NOFOLLOW, 0600)
@@ -139,4 +143,12 @@ func RequestReboot(ctx context.Context) error {
 		}
 	}
 	return errors.New("no se encontró el comando nativo reboot")
+}
+
+func appForServiceManager(c Config, path, version string, manager svcforge.ServiceManager) svcforge.App {
+	app := AppSpec(c, path, version)
+	if manager == svcforge.ServiceManagerSystemd {
+		app.Service.Restart = svcforge.RestartOnFailure
+	}
+	return app
 }
