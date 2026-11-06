@@ -106,3 +106,7 @@ make build
 readelf -l dist/tavito-guard-linux-amd64
 readelf -l dist/tavito-guard-linux-arm64
 ```
+
+## Comprobación final de archivos especiales
+
+PASS: TestSpecialFilesCannotBlockBackupOrLog pasó con -race. Una FIFO real se omite en el respaldo y se rechaza como registro; un enlace de registro también se rechaza. Las aperturas no bloqueantes y sin seguimiento de enlaces evitan la espera por archivos especiales.
