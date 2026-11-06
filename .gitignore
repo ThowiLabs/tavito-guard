@@ -1,0 +1,8 @@
+/dist/
+/artifacts/
+/config.json
+/state.json
+/*.key
+*.log
+*.tmp
+/.cache/
