@@ -369,7 +369,7 @@ func TestSignedUpdateRejectsTampering(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	m := UpdateManifest{Version: "0.2.0", OS: "linux", Arch: "amd64", URL: "https://github.com/YahirHub/tavito-guard/releases/download/v0.2.0/tavito-guard-linux-amd64", SHA256: strings.Repeat("0", 64)}
+	m := UpdateManifest{Version: "0.2.0", OS: "linux", Arch: "amd64", URL: "https://github.com/ThowiLabs/tavito-guard/releases/download/v0.2.0/tavito-guard-linux-amd64", SHA256: strings.Repeat("0", 64)}
 	m.Signature = base64.StdEncoding.EncodeToString(ed25519.Sign(private, m.Payload()))
 	key := base64.StdEncoding.EncodeToString(pub)
 	if e = m.Verify(key); e != nil {

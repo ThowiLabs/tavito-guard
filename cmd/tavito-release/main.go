@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/YahirHub/tavito-guard/internal/guard"
+	"github.com/ThowiLabs/tavito-guard/internal/guard"
 	"os"
 )
 

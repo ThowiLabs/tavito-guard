@@ -6,3 +6,7 @@ Antes de cambiar código, revisar contexto/ y tareas/. Mantener una sola tarea e
 Usar gofmt, go test -race ./..., go vet ./... y compilaciones estáticas.
 No agregar gestión de servicios ni monitoreo de sitios/aplicaciones. svcforge administra únicamente la instalación de Tavito Guard.
 No registrar tokens ni contraseñas. Las operaciones sensibles requieren autorización y confirmación de un solo uso.
+
+## Autoría Git
+
+Todos los commits de este proyecto deben usar autor y committer ThowiLabs <291061271+ThowiLabs@users.noreply.github.com>, vinculados a https://github.com/ThowiLabs/. Mantener la configuración local del repositorio; no modificar la configuración global.

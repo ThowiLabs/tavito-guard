@@ -1,4 +1,4 @@
-module github.com/YahirHub/tavito-guard
+module github.com/ThowiLabs/tavito-guard
 
 go 1.26.0
 
