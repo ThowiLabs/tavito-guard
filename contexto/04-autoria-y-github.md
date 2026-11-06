@@ -15,6 +15,8 @@ La entrega inicial tenía Git local con autor genérico y no estaba publicada en
 # Soluciones implementadas
 Respaldo del historial previo fuera del proyecto. Reescritura de los tres commits preservando árboles, mensajes y fechas. Configuración local de autoría para futuros commits.
 # Pendientes
-Publicar main y verificar en GitHub la cuenta asociada a todos los autores; actualizar el paquete descargable.
+El bot real y la instalación nativa se verifican en el servidor destino, según docs/VALIDACION.md.
 # Próximos pasos
-Pruebas, publicación y verificación del repositorio remoto.
+Mantener la autoría ThowiLabs en nuevos commits y utilizar https://github.com/ThowiLabs/tavito-guard como origen.
+# Resultado
+Repositorio público creado y main publicado. La API de GitHub verificó que author.login y committer.login son ThowiLabs en los cuatro commits iniciales publicados. Las pruebas completas y go vet pasaron tras actualizar el módulo. La identidad local queda configurada para commits futuros.
