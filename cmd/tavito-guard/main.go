@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-var version = "0.1.2"
+var version = "0.1.3"
 
 func main() {
 	if e := run(); e != nil && !errors.Is(e, context.Canceled) {
@@ -29,6 +29,7 @@ func run() error {
 	remove := flag.Bool("remove", false, "Desinstalar conservando configuración y datos")
 	uninstall := flag.Bool("uninstall", false, "Alias de --remove")
 	repair := flag.Bool("repair", false, "Reparar la instalación con svcforge")
+	speedtest := flag.Bool("speedtest", false, "Medir velocidad HTTPS sin configurar ni iniciar el bot")
 	status := flag.Bool("status", false, "Mostrar estado de la instalación")
 	serve := flag.Bool("serve", false, "Ejecutar el bot")
 	setup := flag.Bool("setup", false, "Crear configuración sin instalar")
@@ -57,7 +58,7 @@ func run() error {
 		return os.WriteFile(*render, data, 0600)
 	}
 	actions := 0
-	for _, v := range []bool{*install, *remove || *uninstall, *repair, *status, *serve, *setup, *apply, *resetOwner} {
+	for _, v := range []bool{*install, *remove || *uninstall, *repair, *status, *serve, *setup, *apply, *resetOwner, *speedtest} {
 		if v {
 			actions++
 		}
@@ -65,6 +66,13 @@ func run() error {
 	if actions != 1 {
 		flag.Usage()
 		return errors.New("selecciona exactamente una operación")
+	}
+	if *speedtest {
+		r, e := guard.SpeedTest(ctx, nil)
+		if e != nil {
+			return e
+		}
+		return json.NewEncoder(os.Stdout).Encode(r)
 	}
 	path, e := filepath.Abs(*config)
 	if e != nil {

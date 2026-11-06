@@ -118,3 +118,24 @@ Se reprodujo el mensaje exacto de rechazo de RestartOnFailure con la misma revis
 ## Regresión de mensajes de 0.1.2
 
 La API simulada ahora rechaza inline_keyboard:null según el contrato de InlineKeyboardMarkup. Antes del cambio de cliente falló TestTelegramMenuNavigationAndSession por ausencia de imágenes/archivos. Después pasaron ese recorrido, TestResourcesSendsPhotoWithStrictTelegram, TestEmptyKeyboardUsesArray y TestTelegramErrorReasonIsUsefulAndRedacted. Se validan solicitudes JSON y multipart, con errores que conservan el motivo y ocultan el token. Esta prueba no equivale a una interacción con el bot real del usuario, cuyo mensaje de error concreto no se recibió.
+
+## Speedtest nativo de 0.1.3
+
+Fecha: 2026-11-06 UTC. Se sustituyó el proveedor fijo que devolvía HTTP 403 por HTTP nativo Go con selección HTTPS de Speedtest.net y alternativa LibreSpeed, sin incorporar dependencias.
+
+- Suite completa con detector de carreras: correcta, 114.385 s. Después del refuerzo de confirmación de subida se repitió TestSpeed con -race: correcto, 7.630 s.
+- go vet y git diff --check: correctos.
+- Se comprueban 403 en catálogo, alternativa LibreSpeed, 403 de subida con cambio de servidor y presupuesto compartido, descarga interrumpida, cancelación durante transferencia/sondeo, catálogos inválidos o mayores de 1 MiB, rechazo de destinos privados y redirecciones privadas, respuestas anticipadas de subida y páginas HTML con HTTP 200.
+- Recorrido del botón: catálogo/latencia/descarga/subida mediante HTTP local real y API de Telegram simulada. Se verifica Content-Length y los nombres de servidor mostrados.
+- Medición real inicial desde el entorno de desarrollo: Karlsruhe · Contabo; 65.006 Mbps descarga, 67.663 Mbps subida, latencia HTTP 7.45 ms, 16777216 bytes leídos y 4194304 enviados. Es evidencia de conexión a un servidor público, no un benchmark del servidor del usuario ni una equivalencia con el cliente oficial.
+- Binarios amd64 y arm64 compilados con CGO_ENABLED=0; ELF sin INTERP/DYNAMIC. amd64 ejecutado con --version en Alpine 3.24.4 mediante chroot; imprime Tavito Guard 0.1.3.
+
+Los 16/4 MiB limitan los datos de prueba consumidos por el cliente, incluso entre intentos. Catálogos, sondas, cabeceras y buffers añaden tráfico. Un test con esta muestra limitada puede producir resultados distintos de otro con más duración o datos. El cambio de proveedor está probado con respuestas controladas; no se afirma haber reproducido el bloqueo particular de la IP del usuario. No se probaron botones contra su bot real.
+
+Para repetir una medición real sin credenciales:
+
+```sh
+./dist/tavito-guard-linux-amd64 --speedtest
+```
+
+Segunda medición real, ejecutando el binario estático 0.1.3 después de reforzar la confirmación de subida: Karlsruhe · Contabo, 148.969 Mbps de descarga, 194.524 Mbps de subida, 5.283 ms HTTP; mismos 16/4 MiB. La variación entre muestras refuerza que son estimaciones breves del entorno de pruebas.

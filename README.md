@@ -37,7 +37,7 @@ Usa una contraseña exclusiva para Tavito Guard: el inicio de sesión se escribe
 |---|---|
 | Recursos | CPU, RAM, GPU accesible y tarjeta PNG generada dentro del binario |
 | Historial | Una muestra por minuto, hasta 24 horas; curvas con períodos sin datos visibles |
-| Test de velocidad | 16 MiB de descarga y 4 MiB de subida por HTTPS a Cloudflare; latencia HTTP |
+| Test de velocidad | Cliente nativo Go con selección de servidores HTTPS y alternativa LibreSpeed; muestra de hasta 16 MiB de descarga y 4 MiB de subida |
 | Discos | Uso, disponibilidad, inodos y exploración acotada de carpetas |
 | Procesos | Listado por CPU/RAM, detalles y SIGTERM con confirmación y verificación de identidad |
 | Red | Interfaces, IP locales, contadores RX/TX, IP pública de salida y prueba TCP |
@@ -89,6 +89,14 @@ Crear una tarjeta de recursos sin iniciar el bot:
 ```sh
 ./dist/tavito-guard-linux-amd64 --render recursos.png
 ```
+
+Medir la red desde consola, sin token ni configuración:
+
+```sh
+./dist/tavito-guard-linux-amd64 --speedtest
+```
+
+Devuelve JSON y usa el mismo motor que el botón de Telegram.
 
 ## Datos y límites
 
@@ -190,3 +198,13 @@ Si el token ya se validó y la configuración se guardó, reemplaza el binario p
 ## Corrección de mensajes de 0.1.2
 
 Se corrige el JSON de mensajes sin botones: se omite reply_markup en mensajes nuevos y se envía inline_keyboard:[] al retirar botones de un mensaje existente. Esto evita el rechazo del formato null que impedía enviar las tarjetas de Recursos e Historial. Los errores de Telegram muestran ahora su motivo concreto, con longitud limitada y credenciales ocultas. Se conserva la corrección OpenRC de 0.1.1.
+
+## Speedtest nativo de 0.1.3
+
+Se reemplaza el destino fijo que devolvía HTTP 403. El motor usa únicamente la biblioteca estándar de Go: consulta servidores HTTPS de Speedtest.net, mide latencia HTTP y elige entre los que responden; si fallan, intenta otros y después el catálogo de LibreSpeed. No ejecuta Python, speedtest-cli, curl ni un binario adicional. Se consultaron [speedtest-cli](https://github.com/sivel/speedtest-cli) y [speedtest-go](https://github.com/showwin/speedtest-go) como referencia del protocolo; no se añadió su código ni una dependencia nueva.
+
+La muestra está limitada a 16 MiB leídos de descarga y 4 MiB consumidos por el transporte de subida, compartidos entre los intentos. Las consultas de catálogos, latencia, cabeceras y buffers de red añaden tráfico; estos límites no equivalen a un límite exacto de la interfaz. Se usan hasta cuatro transferencias simultáneas, 12 segundos por fase y 90 segundos para toda la operación. El resultado es una estimación HTTP con muestra limitada; puede diferir de un test largo o del cliente oficial.
+
+Los mensajes muestran el servidor de descarga y de subida por separado si se usaron destinos distintos. HTTPS, validación de direcciones públicas y rechazo de redirecciones a destinos privados limitan los destinos aceptados. Los servidores públicos pueden cambiar, rechazar tráfico o dejar de estar disponibles; el bot informa el fallo si no consigue completar ambas mediciones.
+
+Para actualizar desde el repositorio: `git pull --ff-only`, `make build` y ejecuta el nuevo binario con `--install`. Se conserva la configuración existente.

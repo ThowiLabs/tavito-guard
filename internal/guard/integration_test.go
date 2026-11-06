@@ -328,16 +328,22 @@ func TestSpeedAndNetworkButtons(t *testing.T) {
 			io.WriteString(w, "203.0.113.2")
 			return
 		}
-		if r.Method == "POST" {
-			n, _ := io.Copy(io.Discard, r.Body)
-			if n != 4<<20 {
-				t.Error("tamaño de subida incorrecto")
+		switch r.URL.Path {
+		case "/api/js/servers":
+			io.WriteString(w, `[{"url":"https://speed-fixture.example/speedtest/upload.php","name":"Fixture","sponsor":"Prueba","https_functional":1}]`)
+		case "/speedtest/latency.txt":
+			io.WriteString(w, "test=test")
+		case "/speedtest/upload.php":
+			n, e := io.Copy(io.Discard, r.Body)
+			if e != nil || n != speedChunk || r.ContentLength != speedChunk {
+				t.Error("subida truncada o sin Content-Length", n, r.ContentLength, e)
 			}
-			io.WriteString(w, "{}")
-			return
-		}
-		if r.URL.Query().Get("bytes") == "16777216" {
-			io.CopyN(w, bytes.NewReader(make([]byte, 16<<20)), 16<<20)
+			io.WriteString(w, "size=1048576")
+		case "/speedtest/random4000x4000.jpg":
+			w.Header().Set("Content-Type", "image/jpeg")
+			io.CopyN(w, bytes.NewReader(make([]byte, speedChunk)), speedChunk)
+		default:
+			http.NotFound(w, r)
 		}
 	}))
 	defer srv.Close()
@@ -364,9 +370,12 @@ func TestSpeedAndNetworkButtons(t *testing.T) {
 			t.Fatal(r.last())
 		}
 	}
+	if !strings.Contains(strings.Join(r.texts, "\n"), "Servidor de descarga: Fixture") {
+		t.Fatal("el botón no mostró los servidores medidos")
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, e := SpeedTest(ctx, b.HTTP, "https://speed.cloudflare.com"); e == nil {
+	if _, e := SpeedTest(ctx, b.HTTP); e == nil {
 		t.Fatal("ignoró cancelación")
 	}
 }

@@ -54,14 +54,14 @@ func (b *Bot) route(ctx context.Context, id, chat int64, data string) error {
 			return b.photo(work, chat, "historial.png", fmt.Sprintf("Historial de 24 horas · %d muestras reales. Una muestra por minuto.", len(st.History)), img, KB([]Button{Btn("Actualizar", "history"), Btn("Recursos", "resources")}, []Button{Btn("Menú", "menu")}))
 		})
 	case "speed":
-		return b.show(ctx, chat, "Test de velocidad del servidor\n\nPrueba HTTP acotada contra Cloudflare: descarga de 16 MiB y subida de 4 MiB. La latencia incluye la respuesta HTTP.\n\nEl resultado depende del destino, la duración y el tamaño de la prueba.", KB([]Button{Btn("Iniciar prueba", "speed-run")}, []Button{Btn("Volver", "menu")}))
+		return b.show(ctx, chat, "Test de velocidad del servidor\n\nSelecciona servidores HTTPS por latencia y prueba otro si uno falla. Muestra de hasta 16 MiB de descarga y 4 MiB de subida, más consultas pequeñas de selección.\n\nDuración máxima: 90 segundos. La latencia es HTTP. El resultado estima la velocidad con esta muestra limitada.", KB([]Button{Btn("Iniciar prueba", "speed-run")}, []Button{Btn("Volver", "menu")}))
 	case "speed-run":
 		return b.job(ctx, id, chat, "Test de velocidad", func(work context.Context) error {
-			r, e := SpeedTest(work, b.networkClient(), "https://speed.cloudflare.com")
+			r, e := SpeedTest(work, b.networkClient())
 			if e != nil {
 				return e
 			}
-			return b.show(work, chat, fmt.Sprintf("Test de velocidad completado\n\nDescarga: %.2f Mbps\nSubida: %.2f Mbps\nLatencia HTTP: %.1f ms\nTransferido: %s + %s", r.DownloadMbps, r.UploadMbps, r.LatencyMS, Bytes(uint64(r.DownloadBytes)), Bytes(uint64(r.UploadBytes))), KB([]Button{Btn("Repetir", "speed"), Btn("Menú", "menu")}))
+			return b.show(work, chat, fmt.Sprintf("Test de velocidad completado\n\nDescarga: %.2f Mbps\nSubida: %.2f Mbps\nLatencia HTTP: %.1f ms\nMuestra: %s descargados · %s enviados\n\nServidor de descarga: %s\nServidor de subida: %s\n\nEstimación HTTP con muestra limitada.", r.DownloadMbps, r.UploadMbps, r.LatencyMS, Bytes(uint64(r.DownloadBytes)), Bytes(uint64(r.UploadBytes)), r.DownloadServer, r.UploadServer), KB([]Button{Btn("Repetir", "speed"), Btn("Menú", "menu")}))
 		})
 	case "disks":
 		return b.disksView(ctx, chat, 0)

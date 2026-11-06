@@ -1,4 +1,4 @@
-VERSION ?= 0.1.2
+VERSION ?= 0.1.3
 GO ?= go
 LDFLAGS = -s -w -X main.version=$(VERSION)
 
