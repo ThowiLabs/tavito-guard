@@ -6,3 +6,10 @@
 *.log
 *.tmp
 /.cache/
+
+# Contexto local descifrado (no publicar)
+/contexto/
+/tareas/
+/contexto.md
+/.agents-*.tmp
+/.agents-restore-*/

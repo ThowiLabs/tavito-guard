@@ -215,7 +215,7 @@ func TestTelegramMenuNavigationAndSession(t *testing.T) {
 	if files < 4 {
 		t.Fatal("no envió imágenes y archivos")
 	}
-	for _, row := range MainMenu().Rows {
+	for _, row := range MainMenu(true).Rows {
 		for _, button := range row {
 			if strings.Contains(button.Data, "service") || strings.Contains(button.Data, "application") {
 				t.Fatal("módulo excluido presente")
@@ -315,6 +315,33 @@ func TestDockerButtonsRequireConfirmation(t *testing.T) {
 	}
 	if e = d.Action(context.Background(), strings.Repeat("a", 64), "exec"); e == nil {
 		t.Fatal("aceptó acción no autorizada")
+	}
+}
+
+func TestDockerMenuHiddenWithoutDocker(t *testing.T) {
+	b, r := testBot(t)
+	cfg := b.cfg()
+	cfg.DockerSocket = filepath.Join(t.TempDir(), "sin-docker.sock")
+	if e := b.saveConfig(cfg); e != nil {
+		t.Fatal(e)
+	}
+	for _, row := range MainMenu(false).Rows {
+		for _, button := range row {
+			if button.Data == "docker" || strings.Contains(button.Text, "Docker") {
+				t.Fatal("menú sin Docker muestra Docker")
+			}
+		}
+	}
+	click(t, b, "menu")
+	if strings.Contains(r.last(), "Docker") {
+		t.Fatal("menú mostró Docker sin Docker instalado")
+	}
+	click(t, b, "docker")
+	if strings.Contains(r.last(), "Docker") {
+		t.Fatal("callback Docker mencionó Docker sin Docker instalado")
+	}
+	if !strings.Contains(r.last(), "Selecciona qué necesitas") {
+		t.Fatal("callback Docker no volvió al menú")
 	}
 }
 

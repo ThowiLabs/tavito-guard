@@ -24,7 +24,7 @@ El instalador inicial realiza este orden:
 
 1. Pide el token del bot y lo valida con `getMe` de Telegram.
 2. Pide el usuario de Tavito Guard.
-3. Pide y confirma una contraseña de 12 a 256 bytes.
+3. Pide y confirma una contraseña de 4 a 256 bytes.
 4. Guarda configuración privada e instala el propio bot mediante [svcforge](https://github.com/YahirHub/svcforge).
 
 Después abre el chat privado de tu bot, pulsa **Iniciar sesión** e introduce esas credenciales. El primer acceso correcto vincula el servidor a tu ID de Telegram. La sesión sobrevive a reinicios del bot y del sistema. **Salir** y `/exit` cierran la sesión. Se conserva la vinculación con el propietario.
@@ -42,7 +42,7 @@ Usa una contraseña exclusiva para Tavito Guard: el inicio de sesión se escribe
 | Procesos | Listado por CPU/RAM, detalles y SIGTERM con confirmación y verificación de identidad |
 | Red | Interfaces, IP locales, contadores RX/TX, IP pública de salida y prueba TCP |
 | Registros | Bitácora, archivos seleccionados de /var/log, búsqueda, páginas y descarga acotada |
-| Docker | Contenedores, uso, logs, iniciar/detener/reiniciar con confirmación |
+| Docker | Solo aparece si Docker responde en el servidor. Contenedores, uso, logs, iniciar/detener/reiniciar con confirmación |
 | Respaldos | Agregar carpetas, crear copias locales, retención, programación y envío opcional al chat |
 | Alertas | CPU, RAM y discos; umbrales por botones, recuperación e intervalo entre repeticiones |
 | Accesos | Estado de sesión, cambio de contraseña, revocación y bitácora |
@@ -59,7 +59,7 @@ La navegación usa botones. Las credenciales, las rutas nuevas y el texto de bú
 - Para HTTPS: conexión de salida a Telegram y certificados raíz del sistema. En Alpine instala `ca-certificates` si tu imagen no incluye certificados.
 - CPU, memoria y procesos se obtienen de `/proc`; GPU de `/sys` cuando el controlador expone métricas.
 - NVIDIA puede aportar datos adicionales si su herramienta `nvidia-smi` ya existe. No se instala automáticamente.
-- Docker requiere su daemon y permiso de acceso al socket Unix configurado. El resto del bot funciona sin Docker.
+- Docker es opcional. El menú solo aparece si el daemon responde en el socket configurado. Sin Docker, el bot no lo menciona.
 - La terminación protegida de procesos requiere soporte del kernel para pidfd. Si falta, la operación devuelve un error; no recurre a enviar señales por PID sin fijar la identidad.
 - La instalación utiliza root para las acciones de administración solicitadas. En ejecución manual, las operaciones se limitan a los permisos del usuario del proceso.
 

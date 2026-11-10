@@ -39,8 +39,8 @@ func DefaultConfig() Config {
 	return Config{DataDir: "/var/lib/tavito-guard", BackupMaxMB: 256, BackupKeep: 3, DockerSocket: "/var/run/docker.sock"}
 }
 func NewPassword(password string) (Password, error) {
-	if len(password) < 12 || len(password) > 256 {
-		return Password{}, errors.New("la contraseña debe tener entre 12 y 256 bytes")
+	if len(password) < 4 || len(password) > 256 {
+		return Password{}, errors.New("la contraseña debe tener entre 4 y 256 bytes")
 	}
 	salt := make([]byte, 24)
 	if _, err := rand.Read(salt); err != nil {

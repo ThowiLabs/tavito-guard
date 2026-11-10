@@ -64,16 +64,31 @@ func nav(back string) Keyboard {
 	}
 	return KB([]Button{Btn("Volver", back), Btn("Menú", "menu")})
 }
-func MainMenu() Keyboard {
-	return KB(
-		[]Button{Btn("Recursos", "resources"), Btn("Historial", "history")},
-		[]Button{Btn("Test de velocidad", "speed"), Btn("Red", "network")},
-		[]Button{Btn("Discos", "disks"), Btn("Procesos", "processes")},
-		[]Button{Btn("Docker", "docker"), Btn("Registros", "logs")},
+func MainMenu(docker bool) Keyboard {
+	rows := [][]Button{
+		{Btn("Recursos", "resources"), Btn("Historial", "history")},
+		{Btn("Test de velocidad", "speed"), Btn("Red", "network")},
+		{Btn("Discos", "disks"), Btn("Procesos", "processes")},
+	}
+	if docker {
+		rows = append(rows, []Button{Btn("Docker", "docker"), Btn("Registros", "logs")})
+	} else {
+		rows = append(rows, []Button{Btn("Registros", "logs")})
+	}
+	rows = append(rows,
 		[]Button{Btn("Respaldos", "backups"), Btn("Alertas", "alerts")},
 		[]Button{Btn("Accesos", "access"), Btn("Mantenimiento", "maintenance")},
 		[]Button{Btn("Salir", "logout")},
 	)
+	return KB(rows...)
+}
+
+func (b *Bot) dockerAvailable(ctx context.Context) bool {
+	return NewDocker(b.cfg().DockerSocket).Available(ctx)
+}
+
+func (b *Bot) mainMenu(ctx context.Context) Keyboard {
+	return MainMenu(b.dockerAvailable(ctx))
 }
 func loginMenu() Keyboard { return KB([]Button{Btn("Iniciar sesión", "login")}) }
 func trimText(s string, n int) string {

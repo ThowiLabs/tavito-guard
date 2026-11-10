@@ -27,9 +27,7 @@ func Setup(ctx context.Context, path, dataDir string, in io.Reader, out io.Write
 	read := func(prompt string, secret bool) (string, error) {
 		fmt.Fprint(out, prompt)
 		if f, ok := in.(*os.File); ok && secret && term.IsTerminal(int(f.Fd())) && reader.Buffered() == 0 {
-			b, e := term.ReadPassword(int(f.Fd()))
-			fmt.Fprintln(out)
-			return strings.TrimSpace(string(b)), e
+			return readSecret(f, out)
 		}
 		s, e := reader.ReadString('\n')
 		if e != nil && !(e == io.EOF && s != "") {
@@ -58,7 +56,7 @@ func Setup(ctx context.Context, path, dataDir string, in io.Reader, out io.Write
 		return c, e
 	}
 	c.Username = user
-	pass, e := read("Contraseña de Tavito Guard (12 a 256 bytes): ", true)
+	pass, e := read("Contraseña de Tavito Guard (4 a 256 bytes): ", true)
 	if e != nil {
 		return c, e
 	}
@@ -151,4 +149,59 @@ func appForServiceManager(c Config, path, version string, manager svcforge.Servi
 		app.Service.Restart = svcforge.RestartOnFailure
 	}
 	return app
+}
+
+func readSecret(f *os.File, out io.Writer) (string, error) {
+	fd := int(f.Fd())
+	old, err := term.MakeRaw(fd)
+	if err != nil {
+		return "", err
+	}
+	defer term.Restore(fd, old)
+	return readSecretBytes(f, out)
+}
+
+func readSecretBytes(r io.Reader, out io.Writer) (string, error) {
+	var buf []byte
+	one := make([]byte, 1)
+	for {
+		n, err := r.Read(one)
+		if err != nil {
+			return "", err
+		}
+		if n == 0 {
+			continue
+		}
+		switch b := one[0]; {
+		case b == '\r' || b == '\n':
+			fmt.Fprint(out, "\r\n")
+			return strings.TrimSpace(string(buf)), nil
+		case b == 0x03:
+			fmt.Fprint(out, "\r\n")
+			return "", errors.New("interrumpido")
+		case b == 0x7f || b == 0x08:
+			if len(buf) > 0 {
+				buf = buf[:len(buf)-1]
+				fmt.Fprint(out, "\b \b")
+			}
+		case b == 0x1b:
+			for {
+				m, err := r.Read(one)
+				if err != nil {
+					return "", err
+				}
+				if m == 0 {
+					continue
+				}
+				c := one[0]
+				if c == '[' || c == ';' || c >= '0' && c <= '9' {
+					continue
+				}
+				break
+			}
+		default:
+			buf = append(buf, b)
+			fmt.Fprint(out, "*")
+		}
+	}
 }

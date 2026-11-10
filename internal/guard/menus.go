@@ -23,13 +23,18 @@ func integer(s string) int {
 func (b *Bot) route(ctx context.Context, id, chat int64, data string) error {
 	cfg := b.cfg()
 	p := splitRoute(data)
+	if p[0] == "docker" || p[0] == "container" || p[0] == "containerlogs" || p[0] == "containeraction" {
+		if !b.dockerAvailable(ctx) {
+			return b.route(ctx, id, chat, "menu")
+		}
+	}
 	switch p[0] {
 	case "menu":
 		b.mu.Lock()
 		delete(b.inputs, id)
 		b.mu.Unlock()
 		host, _ := os.Hostname()
-		return b.show(ctx, chat, "Tavito Guard\n"+host+" · v"+b.Version+"\n\nSelecciona qué necesitas consultar o administrar.", MainMenu())
+		return b.show(ctx, chat, "Tavito Guard\n"+host+" · v"+b.Version+"\n\nSelecciona qué necesitas consultar o administrar.", b.mainMenu(ctx))
 	case "logout":
 		return b.logout(ctx, id, chat)
 	case "resources":
@@ -54,7 +59,7 @@ func (b *Bot) route(ctx context.Context, id, chat int64, data string) error {
 			return b.photo(work, chat, "historial.png", fmt.Sprintf("Historial de 24 horas · %d muestras reales. Una muestra por minuto.", len(st.History)), img, KB([]Button{Btn("Actualizar", "history"), Btn("Recursos", "resources")}, []Button{Btn("Menú", "menu")}))
 		})
 	case "speed":
-		return b.show(ctx, chat, "Test de velocidad del servidor\n\nSelecciona servidores HTTPS por latencia y prueba otro si uno falla. Muestra de hasta 16 MiB de descarga y 4 MiB de subida, más consultas pequeñas de selección.\n\nDuración máxima: 90 segundos. La latencia es HTTP. El resultado estima la velocidad con esta muestra limitada.", KB([]Button{Btn("Iniciar prueba", "speed-run")}, []Button{Btn("Volver", "menu")}))
+		return b.show(ctx, chat, "Test de velocidad del servidor\n\nElige servidores HTTPS por latencia. Si uno falla, prueba otro. Muestra de hasta 16 MiB de descarga y 4 MiB de subida.\n\nDuración máxima: 90 segundos. La latencia es HTTP.", KB([]Button{Btn("Iniciar prueba", "speed-run")}, []Button{Btn("Volver", "menu")}))
 	case "speed-run":
 		return b.job(ctx, id, chat, "Test de velocidad", func(work context.Context) error {
 			r, e := SpeedTest(work, b.networkClient())
@@ -184,7 +189,7 @@ func (b *Bot) route(ctx context.Context, id, chat int64, data string) error {
 		if e != nil {
 			return e
 		}
-		return b.API.File(ctx, chat, "sendDocument", "registro.txt", "Extracto limitado a 256 KiB con ocultación preventiva de credenciales comunes.", []byte(strings.Join(lines, "\n")), nav("logs"))
+		return b.API.File(ctx, chat, "sendDocument", "registro.txt", "Extracto de 256 KiB. Credenciales comunes ocultas.", []byte(strings.Join(lines, "\n")), nav("logs"))
 	case "logadd":
 		return b.ask(ctx, id, chat, "logadd", "", "Escribe la ruta absoluta de un archivo regular dentro de /var/log. No se admiten rutas de configuración.")
 	case "docker":
@@ -325,7 +330,7 @@ func (b *Bot) route(ctx context.Context, id, chat int64, data string) error {
 		}
 		return b.show(ctx, chat, text, KB([]Button{Btn("Cambiar contraseña", "passwordchange")}, []Button{Btn("Revocar sesión", "logout"), Btn("Bitácora", "audit")}, []Button{Btn("Menú", "menu")}))
 	case "passwordchange":
-		return b.ask(ctx, id, chat, "newpassword", "", "Escribe la nueva contraseña de Tavito Guard (12 a 256 bytes). Se cerrará tu sesión.")
+		return b.ask(ctx, id, chat, "newpassword", "", "Escribe la nueva contraseña de Tavito Guard (4 a 256 bytes). Se cerrará tu sesión.")
 	case "audit":
 		return b.show(ctx, chat, "Bitácora (últimos registros)\n"+tailLines(b.Store.AuditText(), 16), KB([]Button{Btn("Descargar bitácora", "auditexport"), Btn("Volver", "access")}, []Button{Btn("Menú", "menu")}))
 	case "auditexport":
@@ -336,7 +341,7 @@ func (b *Bot) route(ctx context.Context, id, chat int64, data string) error {
 		return b.confirm(ctx, id, chat, confirmation{Kind: "reboot"}, "¿Reiniciar el servidor completo? Se interrumpirán sus conexiones y procesos.")
 	case "update":
 		if cfg.UpdatePublicKey == "" {
-			return b.show(ctx, chat, "Actualizaciones firmadas\n\nFalta configurar update_public_key. Genera una clave con tavito-release y configura solo su parte pública. El README incluye los pasos. También puedes instalar una versión nueva con --install.", nav("maintenance"))
+			return b.show(ctx, chat, "Actualizaciones firmadas\n\nFalta configurar update_public_key. Genera una clave con tavito-release y configura solo su parte pública. O instala una versión nueva con --install.", nav("maintenance"))
 		}
 		return b.job(ctx, id, chat, "Buscar actualización firmada", func(work context.Context) error {
 			m, e := FetchUpdate(work, cfg, b.Version)
@@ -355,7 +360,7 @@ func (b *Bot) route(ctx context.Context, id, chat int64, data string) error {
 		}
 		return b.execute(ctx, id, chat, c)
 	}
-	return b.show(ctx, chat, "Esta opción ya no está disponible. Abre el menú para continuar.", MainMenu())
+	return b.show(ctx, chat, "Esta opción ya no está disponible. Abre el menú para continuar.", b.mainMenu(ctx))
 }
 func tailLines(text string, n int) string {
 	ls := strings.Split(strings.TrimSpace(text), "\n")
@@ -435,7 +440,7 @@ func (b *Bot) logsMenu(ctx context.Context, chat int64) error {
 		k.Rows = append(k.Rows, []Button{Btn(t.Name, fmt.Sprintf("log:%d:0", i+1))})
 	}
 	k.Rows = append(k.Rows, []Button{Btn("Agregar registro", "logadd"), Btn("Menú", "menu")})
-	return b.show(ctx, chat, "Registros\nLectura acotada a las últimas 256 KiB por archivo. Los campos comunes de credenciales se ocultan de forma preventiva.", k)
+	return b.show(ctx, chat, "Registros\nLee las últimas 256 KiB por archivo. Oculta campos comunes de credenciales.", k)
 }
 func (b *Bot) logLines(i int, filter string) ([]string, error) {
 	if i == 0 {
@@ -672,6 +677,9 @@ func (b *Bot) execute(ctx context.Context, id, chat int64, c confirmation) error
 			return b.show(work, chat, "Se envió SIGTERM. El proceso puede tardar en finalizar.", nav("processes"))
 		})
 	case "docker-start", "docker-stop", "docker-restart":
+		if !b.dockerAvailable(ctx) {
+			return errors.New("acción no permitida")
+		}
 		return b.job(ctx, id, chat, "Cambiar estado Docker", func(work context.Context) error {
 			if e := NewDocker(cfg.DockerSocket).Action(work, c.Value, strings.TrimPrefix(c.Kind, "docker-")); e != nil {
 				return e

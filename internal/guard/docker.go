@@ -57,6 +57,13 @@ func (d *Docker) version(ctx context.Context) (string, error) {
 	return "/v" + v.API, nil
 }
 
+func (d *Docker) Available(ctx context.Context) bool {
+	c, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	_, e := d.version(c)
+	return e == nil
+}
+
 type Container struct {
 	ID     string   `json:"Id"`
 	Names  []string `json:"Names"`

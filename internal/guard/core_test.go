@@ -218,3 +218,46 @@ func TestInstanceLock(t *testing.T) {
 		t.Fatal("permitió dos instancias")
 	}
 }
+
+func TestNewPasswordMinimum(t *testing.T) {
+	if _, e := NewPassword("abc"); e == nil {
+		t.Fatal("aceptó contraseña de 3 bytes")
+	}
+	p, e := NewPassword("abcd")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if !p.Verify("abcd") || p.Verify("abc") {
+		t.Fatal("verificación de contraseña de 4 bytes")
+	}
+	if _, e := NewPassword(strings.Repeat("x", 257)); e == nil {
+		t.Fatal("aceptó contraseña de 257 bytes")
+	}
+}
+
+func TestReadSecretBytesMasked(t *testing.T) {
+	var out bytes.Buffer
+	got, e := readSecretBytes(strings.NewReader("ab\x7fc\r"), &out)
+	if e != nil || got != "ac" {
+		t.Fatalf("borrado: %q %v", got, e)
+	}
+	if out.String() != "**\b \b*\r\n" {
+		t.Fatalf("eco: %q", out.String())
+	}
+	out.Reset()
+	got, e = readSecretBytes(strings.NewReader("clave\r"), &out)
+	if e != nil || got != "clave" {
+		t.Fatalf("pegado: %q %v", got, e)
+	}
+	if out.String() != "*****\r\n" {
+		t.Fatalf("eco de pegado: %q", out.String())
+	}
+	out.Reset()
+	got, e = readSecretBytes(strings.NewReader("a\x1b[Db\r"), &out)
+	if e != nil || got != "ab" {
+		t.Fatalf("escape: %q %v", got, e)
+	}
+	if out.String() != "**\r\n" {
+		t.Fatalf("eco con escape: %q", out.String())
+	}
+}
