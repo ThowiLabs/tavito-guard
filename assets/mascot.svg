@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="280" height="280" shape-rendering="crispEdges">
+  <style>
+    /* Animación estilo Tamagotchi (rebote suave) */
+    .pet-body {
+      animation: bounce 0.9s infinite steps(2, end);
+    }
+    .shadow {
+      animation: shadow-pulse 0.9s infinite steps(2, end);
+      transform-origin: center;
+    }
+    /* Parpadeo de ojos */
+    .eyes-blink {
+      animation: blink 4s infinite;
+      opacity: 0;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-1px); }
+    }
+    @keyframes shadow-pulse {
+      0%, 100% { opacity: 0.25; }
+      50% { opacity: 0.12; }
+    }
+    @keyframes blink {
+      0%, 92%, 98%, 100% { opacity: 0; }
+      94%, 96% { opacity: 1; }
+    }
+  </style>
+
+  <!-- Sombra en el suelo -->
+  <g class="shadow" fill="#000000">
+    <rect x="7" y="22" width="10" height="1" />
+    <rect x="6" y="21" width="12" height="1" opacity="0.5" />
+  </g>
+
+  <!-- Personaje Animado -->
+  <g class="pet-body">
+    
+    <!-- ================= CABELLO (Volumen y base) ================= -->
+    <g fill="#3b3024"> <!-- Sombra / Contorno de cabello -->
+      <rect x="8" y="2" width="8" height="1" />
+      <rect x="6" y="3" width="2" height="1" />
+      <rect x="16" y="3" width="2" height="1" />
+      <rect x="5" y="4" width="1" height="4" />
+      <rect x="18" y="4" width="1" height="4" />
+      <rect x="6" y="8" width="1" height="2" />
+      <rect x="17" y="8" width="1" height="2" />
+    </g>
+
+    <g fill="#524332"> <!-- Castaño base -->
+      <rect x="8" y="3" width="8" height="1" />
+      <rect x="6" y="4" width="12" height="4" />
+      <rect x="7" y="8" width="8" height="1" />
+      <!-- Flequillo cayendo hacia la izquierda/centro -->
+      <rect x="8" y="9" width="4" height="1" />
+    </g>
+
+    <g fill="#695742"> <!-- Luces del cabello (Textura y partido) -->
+      <rect x="9" y="3" width="3" height="1" />
+      <rect x="7" y="4" width="4" height="2" />
+      <rect x="14" y="4" width="2" height="2" />
+      <rect x="8" y="6" width="5" height="2" />
+      <rect x="9" y="8" width="3" height="1" />
+    </g>
+
+    <!-- ================= ROSTRO Y OREJAS ================= -->
+    <g fill="#e0a387"> <!-- Sombras de piel y orejas -->
+      <rect x="6" y="10" width="1" height="2" /> <!-- Oreja der -->
+      <rect x="17" y="10" width="1" height="2" /> <!-- Oreja izq -->
+      <rect x="8" y="13" width="8" height="1" /> <!-- Sombra barbilla -->
+      <rect x="10" y="14" width="4" height="1" /> <!-- Cuello -->
+    </g>
+
+    <g fill="#f4bfa6"> <!-- Piel base -->
+      <rect x="7" y="8" width="10" height="5" />
+      <rect x="8" y="13" width="8" height="1" />
+    </g>
+
+    <!-- Re-aplicar flequillo sobre la frente para dar profundidad -->
+    <g fill="#3b3024">
+      <rect x="7" y="8" width="6" height="1" />
+      <rect x="15" y="8" width="2" height="1" />
+      <rect x="8" y="9" width="3" height="1" />
+    </g>
+    <g fill="#524332">
+      <rect x="8" y="8" width="5" height="1" />
+      <rect x="9" y="9" width="2" height="1" />
+    </g>
+
+    <!-- Cejas -->
+    <g fill="#2c2219">
+      <rect x="8" y="9" width="2" height="1" />
+      <rect x="14" y="9" width="2" height="1" />
+    </g>
+
+    <!-- Ojos abiertos -->
+    <g fill="#1f1712">
+      <rect x="8" y="10" width="2" height="2" />
+      <rect x="14" y="10" width="2" height="2" />
+    </g>
+    <!-- Brillo de los ojos (estilo Tamagotchi/Chibi) -->
+    <g fill="#ffffff">
+      <rect x="8" y="10" width="1" height="1" />
+      <rect x="14" y="10" width="1" height="1" />
+    </g>
+
+    <!-- Ojos cerrados (Animación de parpadeo) -->
+    <g class="eyes-blink" fill="#f4bfa6">
+      <rect x="8" y="10" width="2" height="2" />
+      <rect x="14" y="10" width="2" height="2" />
+      <rect x="8" y="11" width="2" height="1" fill="#2c2219" />
+      <rect x="14" y="11" width="2" height="1" fill="#2c2219" />
+    </g>
+
+    <!-- Rubor de mejillas y Sonrisa -->
+    <rect x="7" y="11" width="1" height="1" fill="#e68a7c" />
+    <rect x="16" y="11" width="1" height="1" fill="#e68a7c" />
+    <rect x="11" y="12" width="2" height="1" fill="#c96b63" /> <!-- Boca -->
+
+    <!-- Cordón negro en el cuello -->
+    <rect x="13" y="14" width="1" height="1" fill="#1a1a1a" />
+
+    <!-- ================= PLAYERA HENLEY ================= -->
+    <!-- Cuello gris claro -->
+    <g fill="#7c8285">
+      <rect x="9" y="14" width="1" height="1" />
+      <rect x="14" y="14" width="1" height="1" />
+      <rect x="10" y="15" width="4" height="1" />
+    </g>
+
+    <!-- Torso y mangas gris carbón -->
+    <g fill="#36393b">
+      <rect x="7" y="15" width="3" height="4" />
+      <rect x="14" y="15" width="3" height="4" />
+      <rect x="10" y="16" width="4" height="3" />
+    </g>
+
+    <!-- Detalle de parche gris claro (abajo a la derecha de la foto / izquierda del personaje) -->
+    <rect x="8" y="17" width="2" height="2" fill="#7c8285" />
+
+    <!-- Los 2 botones blancos característicos -->
+    <g fill="#d8e0e5">
+      <rect x="11" y="16" width="1" height="1" />
+      <rect x="11" y="18" width="1" height="1" />
+    </g>
+
+    <!-- ================= BRAZOS Y PULSERA ================= -->
+    <!-- Brazos (piel) -->
+    <g fill="#f4bfa6">
+      <rect x="6" y="16" width="1" height="3" /> <!-- Brazo der -->
+      <rect x="17" y="16" width="1" height="3" /> <!-- Brazo izq -->
+    </g>
+    <!-- Pulsera negra en la muñeca izquierda -->
+    <rect x="17" y="17" width="1" height="1" fill="#1a1a1a" />
+
+    <!-- ================= PANTALÓN Y TENIS ================= -->
+    <g fill="#22252a">
+      <rect x="8" y="19" width="8" height="1" />
+      <rect x="8" y="20" width="3" height="1" />
+      <rect x="13" y="20" width="3" height="1" />
+    </g>
+    <!-- Zapatos -->
+    <g fill="#141619">
+      <rect x="8" y="21" width="3" height="1" />
+      <rect x="13" y="21" width="3" height="1" />
+    </g>
+
+  </g>
+</svg>

@@ -1,5 +1,9 @@
 # Tavito Guard
 
+<p align="center">
+  <img src="assets/mascot.svg" alt="Tavito, la mascota de Tavito Guard" width="180">
+</p>
+
 Bot privado de administración de servidores Linux mediante Telegram. Go puro, compilación estática y navegación por botones.
 
 ## Inicio rápido
